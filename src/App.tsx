@@ -13,10 +13,15 @@ const ENTRYTYPE_COMMENT = 2;
 
 const ROOTCID_DEMO = "DID:fspace:QmduC2kdLnDy8zXVg7J3zHnpFgBT3YU19Ym2kbNmsyNfdP";
 
-const chainId = "filespace";
-const rpcEndpoint = "http://0.0.0.0:26657";
+const URL = "http://172.17.0.1"
 
-const API_GET_FILEENTRY_BY_PARAM = "http://localhost:8001/api/getFileEntriesByParams"
+const chainId = "filespace-01";
+const rpcEndpoint = URL + ":26657";
+
+const API_PATH_GET_FILEENTRY_BY_PARAM = URL + ":8001/api/getFileEntriesByParams";
+const API_PATH_PIN_FILEENTRY = URL + ":8001/api/pinFileEntry";
+const API_PATH_PUBLISH_FILEENTRY = URL + ":8001/api/postNewFileEntry"
+
 const API_PARAM_ROOTHASH = "roothash";
 const API_PARAM_PARENTHASH = "parenthash";
 const API_PARAM_CREATORID = "creatorId";
@@ -83,9 +88,9 @@ const requestChainAdd = async () => {
                     // The name of the chain to be displayed to the user.
                     chainName: "filespace",
                     // RPC endpoint of the chain.
-                    rpc: "http://localhost:26657",
+                    rpc: URL + ":26657",
                     // REST endpoint of the chain.
-                    rest: "http://localhost:1317",
+                    rest: URL + ":1317",
                     // Staking coin information
                     stakeCurrency: {
                         // Coin denomination to be displayed to the user.
@@ -293,7 +298,7 @@ const addFileEntryTX = async (fileEntry: FileEntry) =>{
 		
 		console.log("pin request for " + fileEntry.cid);
 		
-		fetch("http://localhost:8001/api/pinFileEntry", requestOptions)
+		fetch(API_PATH_PIN_FILEENTRY, requestOptions)
 		.then(res => {
 			if(res.status == 204){
 				alert("SUCCESS");
@@ -324,7 +329,7 @@ function FileEntryList(fileEntry: FileEntry) {
 
 
 
-    var queryString = API_GET_FILEENTRY_BY_PARAM;
+    var queryString = API_PATH_GET_FILEENTRY_BY_PARAM;
 
     var params = new URLSearchParams();
 
@@ -410,7 +415,7 @@ function NewEntryForm(parentEntry: FileEntry) {
         body: JSON.stringify({ Title: _title, Text: _text })
     };
 	
-	fetch("http://localhost:8001/api/postNewFileEntry", requestOptions)
+	fetch(API_PATH_PUBLISH_FILEENTRY, requestOptions)
         .then(response => response.json())
         .then(data => {
             var createdDID = data.did as string;
