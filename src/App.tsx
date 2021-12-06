@@ -1,5 +1,4 @@
-import React ,  { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import React, {useState, useEffect, useRef} from 'react';
 import './App.css';
 import { DirectSecp256k1HdWallet, Registry } from "@cosmjs/proto-signing";
 import { assertIsBroadcastTxSuccess, SigningStargateClient, coins, defaultRegistryTypes} from "@cosmjs/stargate";
@@ -8,29 +7,43 @@ import { Vote } from "./proto/vote";
 import {MsgCreateVote, MsgCreateVoteResponse, MsgPublishfileentry, MsgPublishfileentryResponse} from "./proto/tx"
 import * as http from "http";
 
-const ENTRYTYPE_PROBLEM = 1;
-const ENTRYTYPE_COMMENT = 2;
 
-const ROOTCID_DEMO = "DID:fspace:QmduC2kdLnDy8zXVg7J3zHnpFgBT3YU19Ym2kbNmsyNfdP";
+import Button from 'react-bootstrap/Button';
+import AliceCarousel from 'react-alice-carousel';
+import 'react-alice-carousel/lib/alice-carousel.css';
+import { BrowserRouter as Router } from 'react-router-dom';
+import {Col, Container, Nav, Navbar, NavDropdown, Row} from "react-bootstrap";
+import { FileContent, FileContentList, FileEntry} from "./model/model";
+import FileEntryCard from "./components/FileEntryCard";
+import FileEntryCarousel from "./components/FileEntryCarousel";
+import {
+    API_PARAM_CREATORID,
+    API_PARAM_PARENTHASH,
+    API_PARAM_ROOTHASH,
+    API_PATH_GET_FILEENTRY_BY_PARAM,
+    API_PATH_PIN_FILEENTRY, API_PATH_PUBLISH_FILEENTRY,
+    chainId,
+    ENTRYTYPE_PROBLEM,
+    ROOTCID_DEMO,
+    rpcEndpoint
+} from "./constants/constants";
+import FileEntryDivision from "./components/FileEntryDivision";
 
-const URL = "http://172.17.0.1"
-
-const chainId = "filespace-01";
-const rpcEndpoint = URL + ":26657";
-
-const API_PATH_GET_FILEENTRY_BY_PARAM = URL + ":8001/api/getFileEntriesByParams";
-const API_PATH_PIN_FILEENTRY = URL + ":8001/api/pinFileEntry";
-const API_PATH_PUBLISH_FILEENTRY = URL + ":8001/api/postNewFileEntry"
-
-const API_PARAM_ROOTHASH = "roothash";
-const API_PARAM_PARENTHASH = "parenthash";
-const API_PARAM_CREATORID = "creatorId";
 
 
+
+const handleDragStart = (e: { preventDefault: () => any; }) => e.preventDefault();
 const anyWindow: any = window;
 
 var sdkaddress: string;
 
+var cont1 : FileContent = {
+    EntryType: ENTRYTYPE_PROBLEM,
+    Title: "hmmm",
+    Text: "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet."
+}
+
+var testentries : FileContent[] = [cont1, cont1, cont1, cont1, cont1, cont1, cont1, cont1];
 
 if (typeof window !== 'undefined' && !window.onunhandledrejection) {
     window.onunhandledrejection = function (event) {
@@ -41,28 +54,54 @@ if (typeof window !== 'undefined' && !window.onunhandledrejection) {
 }
 
 function App() {
-  return (
-    <div className="App">
-      <header>
-      </header>
-	  <body>
-      {/*  <KeplrControls /> */}
+    return (
+        <div className="App">
+            <body>
+            <Navbar bg="light" expand="lg">
+                <Container>
+                    <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
+                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                    <Navbar.Collapse id="basic-navbar-nav">
+                        <Nav className="me-auto">
+                            <Nav.Link href="#home">Home</Nav.Link>
+                            <Nav.Link href="#link">Link</Nav.Link>
+                            <NavDropdown title="Dropdown" id="basic-nav-dropdown">
+                                <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+                                <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
+                                <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+                                <NavDropdown.Divider />
+                                <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
+                    </Navbar.Collapse>
+                </Container>
+            </Navbar>
 
-        <FileEntryList cid={""} rootcid={ROOTCID_DEMO} parentcid={""} creatorId={""} entrytype={ENTRYTYPE_PROBLEM} newEntrytype={0}/>
+                <Container fluid>
+                        <FileEntryDivision cid={""} rootcid={ROOTCID_DEMO} parentcid={""} creatorId={""}
+                                           entrytype={ENTRYTYPE_PROBLEM} newEntrytype={0}/>
 
-		<NewEntryForm  parentcid={"ThisIstheParentsParentsCID"} rootcid={"ThisIstheRootCID"} cid={"ThisIstheParentsCID"} newEntrytype={ENTRYTYPE_PROBLEM} creatorId={""} entrytype={0}/>
-	  
-			<div>
-				<p>Test du wichser</p>
-				<button onClick={checkKeplr}> Check Keplr
-				</button>
-				<button onClick={requestChainAdd}> Add Chain
-				</button>
-			</div>
-	  </body>
-    </div>
-  );
+                        <FileEntryList cid={""} rootcid={ROOTCID_DEMO} parentcid={""} creatorId={""}
+                                       entrytype={ENTRYTYPE_PROBLEM} newEntrytype={0}/>
+
+                        <NewEntryForm parentcid={"ThisIstheParentsParentsCID"} rootcid={"ThisIstheRootCID"}
+                                      cid={"ThisIstheParentsCID"} newEntrytype={ENTRYTYPE_PROBLEM} creatorId={""}
+                                      entrytype={0}/>
+
+                        <div>
+                            <p>Test du wichser</p>
+                            <Button onClick={checkKeplr}> Check Keplr
+                            </Button>
+                            <button onClick={requestChainAdd}> Add Chain
+                            </button>
+                        </div>
+                </Container>
+            </body>
+        </div>
+    );
 }
+
+
 
 function getOwnCreatorId() {
     return sdkaddress;
@@ -207,17 +246,7 @@ const checkKeplr = async () =>{
     }
 }
 	
-interface FileEntry {
-    cid: string;
-	rootcid: string;
-	parentcid: string;
-	creatorId: string;
-	entrytype: number;
 
-    //using the same props class to pass entrytypes for new fileentry
-    newEntrytype: number;
-
-}	
 
 	
 const addFileEntryTX = async (fileEntry: FileEntry) =>{
@@ -313,14 +342,8 @@ const addFileEntryTX = async (fileEntry: FileEntry) =>{
 	}
 }
 
-interface FileContentList{
-   fileEntries: FileContent[];
-}
 
-interface FileContent{
-    Title: string;
-    Text: string;
-}
+
 
 function FileEntryList(fileEntry: FileEntry) {
   const [error, setError] = useState<any>([])
@@ -387,17 +410,11 @@ function FileEntryList(fileEntry: FileEntry) {
     return <div>Loading...</div>;
   } else {
     return (
-      <ul>
-        {
-            items.map((item,index) => (
-          <li key={index}>{item.Title}
-            {item.Text}
-          </li>
-        ))}
-      </ul>
+        <FileEntryCarousel fileEntries={items}/>
     );
   }
 }
+
 
 
 function NewEntryForm(parentEntry: FileEntry) {
